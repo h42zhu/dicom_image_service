@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
+from PIL import Image
 import hashlib
 import shutil
+import os.path
+import util.converter
+import cv2
+
 
 class DICOMStorageInterface(ABC):
     # Interface that defines the storage operations of dicom files
@@ -24,11 +29,11 @@ class DICOMStorageInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def retrieve_file(self, hash):
+    def retrieve_file(self, hash: str):
         """ Function to retrieve a dicom file to storage
         @param hash: A unique hash string that identifies the dicom file
 
-        @output: None - if file not found, else returns a file-like object
+        @output: None if file not found, else returns an image as a bytes object
         """
         raise NotImplementedError
         
@@ -54,9 +59,12 @@ class DICOMLocalStorage(DICOMStorageInterface):
 
     def save_file(self, file):
         dicom_hash = get_hash(file)
-        file_path = self.path + dicom_hash
+        file_path = os.path.join(self.path, dicom_hash)
+        print("saving file to: ", file_path)
         
-        print(file_path)
+        if os.path.exists(file_path):
+            # noop if the file already exists
+            return dicom_hash
 
         with open(file_path, "wb") as f:
             shutil.copyfileobj(file, f)
@@ -64,5 +72,21 @@ class DICOMLocalStorage(DICOMStorageInterface):
         return dicom_hash
 
 
-    def retrieve_file(self, uid):
+    def retrieve_file(self, hash: str):
+        file_path = os.path.join(self.path, hash)
+
+        if os.path.exists(file_path):
+            image_2d = util.converter.dicom_to_array(file_path)
+            
+            im = Image.fromarray(image_2d)
+
+            # Uncomment lines below to enable save image as png to disk
+            # png_path = os.path.join(self.path, hash + ".png")
+            # cv2.imwrite(png_path, image_2d)
+
+            return im.tobytes()
+        else:
+            raise FileNotFoundError()
+
+    def query_tag_value(self, hash, tag):
         pass

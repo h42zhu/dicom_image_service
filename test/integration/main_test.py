@@ -1,24 +1,21 @@
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, UploadFile
 
-### Mock Server for testing purpose
-app = FastAPI()
+import os, sys
 
-@app.get("/api/v1/dicom_images")
-def get_dicom_image():
-    return {"Hello": "World"}
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# @app.post("/api/v1/dicom_images")
-# async def upload_dicom_image(file: UploadFile):
-#     print("filename", file.filename)
+sys.path.append(os.path.join(parent_dir, "src"))
 
-#     return {"filename": "file.filename"}
+from main import app
 
 client = TestClient(app)
 
 def test_post_dicom_images():
-    response = client.get("/api/v1/dicom_images")
+    test_image = os.path.join("test/integration/test_resources/PA000001/ST000001/SE000001", "IM000001")
+    files = {"dicom": ("file", open(test_image, "rb"))}
+    response = client.post("/api/v1/dicom_images", files=files)
+    
     assert response.status_code == 200
-    assert True
  
 
