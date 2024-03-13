@@ -2,3 +2,4 @@
 test/integration/.pytest_cache
 test/integration/test_resources
 resources/
+test_resources/

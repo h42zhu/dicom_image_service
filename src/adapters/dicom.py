@@ -4,8 +4,7 @@ import hashlib
 import shutil
 import os.path
 import util.converter
-import cv2
-
+import pydicom
 
 class DICOMStorageInterface(ABC):
     # Interface that defines the storage operations of dicom files
@@ -71,7 +70,6 @@ class DICOMLocalStorage(DICOMStorageInterface):
 
         return dicom_hash
 
-
     def retrieve_file(self, hash: str):
         file_path = os.path.join(self.path, hash)
 
@@ -89,4 +87,15 @@ class DICOMLocalStorage(DICOMStorageInterface):
             raise FileNotFoundError()
 
     def query_tag_value(self, hash, tag):
-        pass
+        file_path = os.path.join(self.path, hash)
+
+        if not os.path.exists(file_path):
+            raise FileNotFoundError()
+        
+        dataset = pydicom.dcmread(file_path, force=True)
+        element = dataset[tag]
+
+        if element is None:
+            return {}
+
+        return {element.keyword: element.value}

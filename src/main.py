@@ -17,7 +17,6 @@ The third route allows the caller to query a dicom image based on an a hash stri
 Responds with a JSON that contains the value of the queried tags
 """
 
-import pydicom
 import adapters.dicom
 import os
 
@@ -39,6 +38,14 @@ def get_dicom_image(hash: str):
         return Response(content=image, media_type="image/png")
     except FileNotFoundError:
         return Response("File not found", status_code=404)
+    
+@app.get("/api/v1/dicom_images/{hash}/attributes")
+def get_dicom_attributes(hash: str, tag: str):
+    try:
+        result = dicom_storage.query_tag_value(hash, tag)
+        return result
+    except FileNotFoundError:
+        return Response("File not found", status_code=404)
 
 @app.post("/api/v1/dicom_images")
 async def upload_dicom_image(dicom: UploadFile):
@@ -48,10 +55,4 @@ async def upload_dicom_image(dicom: UploadFile):
         return {"identifier": hash}
     except Exception:
         return Response("Internal server error", status_code=500)
-
-    
-def retrieve_file_metadata(file_path):
-    print("retrieve_file_metadata")
-    dataset = pydicom.dcmread(file_path)
-    print(dataset)
 
