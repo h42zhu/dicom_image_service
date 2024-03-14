@@ -46,6 +46,8 @@ def get_dicom_attributes(hash: str, tag: str):
         return result
     except FileNotFoundError:
         return Response("File not found", status_code=404)
+    except KeyError:
+        return Response("Invalid tag: {0}".format(tag), status_code=404)
 
 @app.post("/api/v1/dicom_images")
 async def upload_dicom_image(dicom: UploadFile):

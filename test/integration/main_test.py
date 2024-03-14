@@ -4,7 +4,7 @@ import os, sys
 parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(parent_dir, "src"))
 
-# Todo - use a test HTTP server with a test dicom adapter injected as dependency instead of using the actual HTTP from main
+# Todo - use dependency injection to test the application where the dicom file storage is different
 from main import app
 
 client = TestClient(app)
